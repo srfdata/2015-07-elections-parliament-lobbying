@@ -1,0 +1,39 @@
+id,title-de,title-en,title-fr,title-it,title-ro
+1,Nahrungsmittel,Foods,Agroalimentaire,Agrolimentare,Agricultura
+2,"Versicherung, Vorsorge","Insurance, precautions","Assurance, prévoyance","Assicurazione, previdenza","Assicuranza, prevenziun"
+3,Luftfahrt,Air travel,Aéronautique,Aeronautica,Eronautica
+4,"Banken, Finanzen, Buchführung","Banks, finance and accounts","Banque, finance, comptabilité","Banca, finanza, contabilità","Banca, finanzas, contabilitad"
+5,Getränke (ohne Wein),Soft drinks,Boissons (hors vin),Bevande,Bavrondas (senza vin)
+6,Krankenkassen,Health insurers,Caisses-maladie,Cassa malati,Cassas da malsauns
+7,"Kommunikation, Öffentlichkeitsarbeit","Communications, public relations","Communication, relations publiques","Comunicazione, relazioni pubbliche","Communicaziun, relaziuns publicas"
+8,"Beratung, Coaching","Consultancy, coaching","Conseil, coaching",Consulenza,"Cussegliaziun, coaching"
+9,"Bauwesen, Architektur","Construction, architecture","Construction, architecture","Costruzione, architettura","Construcziun, architectura"
+10,Handel,Trade,Distribution,Distribuzione,Distribuziun
+11,Recht,Law,Droit,Diritto,Dretg
+12,Wirtschaft,Economy,Economie,Economia,Economia
+13,Energie,Energy,Energie,Energia,Energia
+14,"Kinder, Jugend","Children, youth","Enfants, jeunesse","Infanzia, gioventù","Uffants, giuventetgna"
+15,"Schule, Bildung",Education,"Enseignement, formation","Insegnamento, formazione","Scolaziun, furmaziun"
+16,Umwelt,Environment,Environnement,Ambiente,Ambient
+17,Familie,Family,Famille,Famiglia,Famiglia
+18,Immobilien,Real estate,Immobilier,Immobiliare,Immobiglias
+19,Industrie,Industry,Industrie,Industria,Industria
+20,Selbständig,Freelance,Indépendant,Indipendente,Independenza
+21,"Informatik, Web","IT, Web","Informatique, web, NTIC","Informatica, comunicazione, NTIC","Informatica, web, NTIC"
+22,"Literatur, Medien","Literature, media","Littérature, médias","Letteratura, media","Litteratura, medias"
+23,KMU,SME,PME,PMI,PME
+24,Keine Information vorhanden,No information available,Pas d'information,Nessuna indicazione,Naginas indicaziuns
+25,Pharmazeutik,Pharmaceuticals,Pharmaceutique,Farmaceutica,Farmaceutica
+26,"Polizei, Armee","Police, army","Police, armée","Polizia, esercito","Polizia, armada"
+27,Politik,Politics,Politique,Politica,Politica
+28,Sozialpoltik,Social politics,Politique sociale,Politica sociale,Politica sociala
+29,Gesundheit,Health,Santé,Sanità,Sanadad
+30,Wissenschaft,Sciences,Sciences,Scienze,Scienza
+31,Öffentlicher Dienst,Public service,Service public,Servizio pubblico,Service public
+32,Andere Dienstleistungen,Other services,Services divers,Diversi servizi,Divers servetschs
+33,Soziales,Social,Social,Socialità,Socialesser
+34,Sport,Sport,Sport,Sport,Sport
+35,Forst- und Holzwirtschaft,Forestry and wood industry,Sylviculture et industrie du bois,Selvicoltura e industria del legno,Selvicultura ed industria da laina
+36,Gewerkschaften,Unions,Syndicat,Sindacato,Sindicat
+37,"Transport, Logistik",Transport and logistics,"Transport de marchandises, logistique","Trasporti di merci, logistica","Transport da rauba, logistica"
+38,Wein,Wine,"Vin (viticulture, œnologie)","Vino (vinicoltura, enologia)","Vin (viticultura, enologia)"

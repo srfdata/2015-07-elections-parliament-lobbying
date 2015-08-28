@@ -1,0 +1,401 @@
+---
+title: 'Federal Elections 2015: Parliament Lobbying'
+subtitle: 'Preprocessing and analysis'
+author: "SRF Data, Timo Grossenbacher (timo.grossenbacher@srf.ch)" 
+date: "06/29/2015"
+output: html_document
+---
+
+
+## Notes
+
+This document illustrates the preprocessing of the dataset visualized in this [article on srf.ch](http://www.srf.ch/news/wahlen-15/wahlkampf/das-lobbying-der-nationalraete-auf-einen-blick).
+
+SRF Data attaches great importance to transparent and reproducible data preprocessing and -analysis. SRF Data believes in the principles of open data but also open and reproducible methods. Third parties should be empowered to build on the work of SRF Data and to generate new analyses and applications. 
+
+### R-Script & processed data
+
+The preprocessing and analysis of the data was conducted in the [R project for statistical computing](https://www.r-project.org/). The RMarkdown script used to generate this document and all the resulting data can be downloaded [under this link](http://srfdata.github.io/2015-07-elections-parliament-lobbying/rscript.zip). Through executing `main.Rmd`, the herein described process can be reproduced and this document can be generated. In the course of this, data from the folder `ìnput` will be processed and results will be written to `output`. 
+
+### GitHub
+
+The code for the herein described process can also be freely downloaded from [https://github.com/srfdata/2015-07-elections-parliament-lobbying](https://github.com/srfdata/2015-07-elections-parliament-lobbying). Criticism in the form of GitHub issues and pull requests are very welcome! 
+
+### License
+
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">2015-07-elections-parliament-lobbying</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/srfdata/2015-07-elections-parliament-lobbying" property="cc:attributionName" rel="cc:attributionURL">SRF Data</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+
+### Exclusion of liability
+
+The published information has been collated carefully, but no guarantee is offered of its completeness, correctness or up-to-date nature. No liability is accepted for damage or loss incurred from the use of this script or the information drawn from it. This exclusion of liability also applies to third-party content that is accessible via this offer.
+
+### Other projects
+
+All code & data from [SRF Data](http://srf.ch/data) is available under [http://srfdata.github.io](http://srfdata.github.io).
+
+## Data description
+
+### Original data source
+
+In the following, the data source "Smartvote" refers to "Politools/smartvote.ch, Bern (Daniel Schwarz)".
+
+The following files were originally preprocessed by Pauline Turuban (RTS). For specific questions, please contact her under pauline.turuban@rts.ch
+
+* `input/billcontext.submitters.ext.leg49.xls` - Contains all the parliamentarian submissions of the 49th legislature, for both chambers, classified by topic. Not directly used in the preprocessing. Data source: Smartvote. Original comment by data source: "It's an excerpt of all submitted affairs in the 49th legislature (winter session 2011 until spring session 2015) in the Swiss National Council. Source = Webservices of the Swiss Parliamentary Services, Bern (http://ws.parlament.ch/)".
+
+* `input/MP_mandates_v3.xlsx` - This file has two sources. The first and main one is, again, the [register of interests](http://www.parlament.ch/d/organe-mitglieder/nationalrat/documents/ra-nr-interessen.pdf). The data was copied, cleaned, and links of interest were categorized. To do that, the organisations' websites and/or the [Monetas database](http://www.monetas.ch) was checked to know in what activities MPs were involved. The second source is more a complement of the first one. It was obtained from Stefano Puddu (economist at UniNE) a dataset he set up for his work "MP's links of interest, a comprehensive dataset". It can now be downloaded from [his website](http://media.wix.com/ugd/88e5d7_2a9d483dfa0d4c4c9d898336c6069857.xlsx?dn=frequencies%20dataset.xlsx). Description by that data source: "Monetas has [a list of Swiss politicians](http://www.monetas.ch/htm/705/fr/Politiciens-resultats-de-la-recherche.htm?SortBy=Name&SortOrder=0). For each of them we opened his/her personal page in Monetas and we opened all the pages referring to the companies in which the politician has a mandate. All the process has been automatized by using perl and [import.io](http://import.io), to extract all the data.". The database by Stefano Puddu was mainly used to complement missing information on MPs' professions. The column "Topic" has been created by Pauline Turuban. Its purpose was to match certain types of interest to certain motions/postulates (see below).
+
+* `input/motions_postulates.xlsx` - Manually derived from `input/billcontext.submitters.ext.leg49.xls` and actually used in the preprocessing. The classification by topic is established by the parliament itself. Manually, a subcategory "Health insurance" within the category "Health" was created. Also, only what was needed was kept: motions and postulates.
+
+* `input/MP_ID_v2.xlsx` - A basic list of MPs' IDs as made by the parliament itself. Data source: Smartvote.
+
+* `input/MP_profession.xlsx` - The original source for the column "profession" is the [register of interests](http://www.parlament.ch/d/organe-mitglieder/nationalrat/documents/ra-nr-interessen.pdf) one can find on the parliament's website (as of April 2015). Based on it, categories of professions were established (for example: lawyers, jurists, attorneys / bankers, fiduciaries / ingenieurs / teachers, etc.). It explains why the denominations are not exactly the same as in the MP's biographies. 
+
+* `input/commissions.csv` - This file was originally generated in the below script, but fetching the commission data from the parliament API turned out to be error-prone and unstable. Thus, the respective part of the code is now commented out and the file was transferred to `input`.
+
+* `input/mp_commissions` - Contains the links between MP's IDs and their commissions (as IDs, semicola-separated).
+
+* `input/*` - Other files are just lookup tables that will just be copied over to `output`, their structure is described below under "Lookup tables"
+
+### Description of output
+
+The following sections describe the results of the data preprocessing as stored in the `output` folder. 
+
+### Lookup tables 
+
+#### `output/cantons.csv`
+
+| Attribute | Type | Description | 
+|-------|------|---------|
+| abbr | String  | Official cantonal abbreviation  |
+| majority-election | Integer  | Whether the majoral voting system is in place (1) or not (0)  |
+|  name.*  |  String |  Name in German (de), French (fr), English (en), Romansh (ro), Italian (it), respectively  |
+
+#### `output/parties.csv`
+
+Contains party classifications made by SRF Data with the help of political scientists, used throughout all projects related to elections. This version here is a slightly altered form which contains all parties that have at least one MP in the national council.
+
+| Attribute | Type | Description | 
+|-------|------|---------|
+| id | Integer  | Unique identifier  |
+|  abbr.*  |  String |  Abbreviation in German (de), French (fr), English (en), Romansh (ro), Italian (it), respectively  |
+
+
+#### `output/commissions.csv`
+
+Contains commission information as fetched from the [parliamentary API](http://ws.parlament.ch/councillors/).
+
+| Attribute | Type | Description | 
+|-------|------|---------|
+| id | Integer  | Unique identifier  |
+|  title.*  |  String |  Name in German (de), French (fr), English (en), Romansh (ro), Italian (it), respectively  |
+
+#### `output/interest_categories.csv`
+
+Contains categories of links of interest as defined by Pauline Turuban (RTS).
+
+| Attribute | Type | Description | 
+|-------|------|---------|
+| id | Integer  | Unique identifier  |
+|  title.*  |  String |  Name of category of link of interest in German (de), French (fr), English (en), Romansh (ro), Italian (it), respectively  |
+
+#### `output/political_action_categories.csv`
+
+Contains topics of political "actions" (motions and postulates) as defined by the parliament itself.
+
+| Attribute | Type | Description | 
+|-------|------|---------|
+| id | Integer  | Unique identifier  |
+|  title.*  |  String |  Name of the topic in German (de), French (fr), English (en), Romansh (ro), Italian (it), respectively  |
+
+#### `output/professions.csv`
+
+Contains professions of MPs.
+
+| Attribute | Type | Description | 
+|-------|------|---------|
+| id | Integer  | Unique identifier  |
+|  title.*  |  String |  Name of the profession in German (de), French (fr), English (en), Romansh (ro), Italian (it), respectively  |
+
+#### `output/profession_branches.csv`
+
+Contains categories of professions ("branches") as defined by Pauline Turuban (RTS).
+
+| Attribute | Type | Description | 
+|-------|------|---------|
+| id | Integer  | Unique identifier  |
+|  title.*  |  String |  Name of the category in German (de), French (fr), English (en), Romansh (ro), Italian (it), respectively  |
+
+### Parliamentarian tables
+
+#### `output/parliamentarian.csv`
+
+
+| Attribute | Type | Description | 
+|-------|------|---------|
+| id | Integer  | Unique identifier as defined by the parliament itself  |
+|  first_name  |  String |  First name of the MP |
+|  last_name  |  String |  Last name of the MP  |
+|  canton  |  String |  Official cantonal abbreviation, references `abbr` in `output/cantons.csv`  |
+|  party_id  |  Integer |  Party, references `id` in `output/parties.csv`  |
+|  profession_id  |  Integer |  Profession, references `id` in `output/professions.csv`  |
+|  branch_id  |  Integer |  Branch of profession, references `id` in `output/profession_branches.csv`  |
+|  commissions  |  String |  Semicolon-separated list of parliamentary commissions, references `id` in `output/commissions.csv`  |
+
+
+#### `output/parliamentarian_mandates.csv`
+
+Contains information about the links of interest of each MP (e.g. presidencies, administrative councils, etc.).
+
+| Attribute | Type | Description | 
+|-------|------|---------|
+| parliamentarian_id | Integer  | References `id` in `output/parliamentarian.csv`  |
+|  interest_categories_id  |  Integer |  The category of the link of interest, references `id` in `output/interest_categories.csv` |
+|  title  |  String |  Name of link of interest as shown on parlament.ch  |
+
+#### `output/parliamentarian_actions.csv`
+
+Contains all political "actions", i.e., motions and postulates submitted by MP's.
+
+| Attribute | Type | Description | 
+|-------|------|---------|
+| parliamentarian_id | Integer  | References `id` in `output/parliamentarian.csv`  |
+| bill_id | Integer  | The official ID of the political action |
+| political_action_categories_id  |  Integer |  The topic of the political action, references `id` in `output/political_action_categories.csv` |
+
+
+## Preparations
+
+### Install packages
+
+```{r, echo=FALSE}
+if(!require(readxl)) {
+  devtools::install_github("hadley/readxl")
+  require(readxl)
+}
+
+if(!require(dplyr)) {
+  install.packages("dplyr", repos="http://cran.us.r-project.org")
+  require(dplyr)
+}
+if(!require(tidyr)) {
+  install.packages("tidyr", repos="http://cran.us.r-project.org")
+  require(tidyr)
+}
+if(!require(ggplot2)) {
+  install.packages("ggplot2", repos="http://cran.us.r-project.org")
+  require(ggplot2)
+}
+if(!require(magrittr)) {
+  install.packages("magrittr", repos="http://cran.us.r-project.org")
+  require(magrittr)
+}
+if(!require(httr)) {
+  install.packages("httr", repos="http://cran.us.r-project.org")
+  require(httr)
+}
+if(!require(jsonlite)) {
+  install.packages("jsonlite", repos="http://cran.us.r-project.org")
+  require(jsonlite)
+}
+```
+
+## Preprocessing
+
+### Lookup Tables
+
+```{r}
+parties <- read.csv("input/parties.csv") 
+parties %<>% select(-message.code, -color.id, -sortorder, -use.label)
+write.csv(parties, file = "output/parties.csv", row.names = F, na = "", quote = T)
+
+cantons <- read.csv("input/cantons.csv")
+write.csv(cantons, file = "output/cantons.csv", row.names = F, na = "", quote = T)
+
+interest_categories <- read.csv("input/interest_categories.csv") 
+interest_categories %<>% select(-sort)
+write.csv(interest_categories, file = "output/interest_categories.csv", row.names = F, na = "", quote = T)
+
+political_action_categories <- read.csv("input/political_action_categories.csv") 
+political_action_categories %<>% select(-sort)
+write.csv(political_action_categories, file = "output/political_action_categories.csv", row.names = F, na = "", quote = T)
+
+profession_branches <- read.csv("input/profession_branches.csv") 
+write.csv(profession_branches, file = "output/profession_branches.csv", row.names = F, na = "", quote = T)
+
+professions_lt <- read.csv("input/professions.csv") 
+write.csv(professions_lt, file = "output/professions.csv", row.names = F, na = "", quote = T)
+```
+
+### Basic MP info
+
+```{r}
+# Load list of MPs, professions
+mps <- read_excel(path = "input/MP_ID_v2.xlsx")[1:200,1:5]
+mps %<>% rename(first_name = `first name`, last_name = `last name`)
+# load list of professions
+professions <- read_excel(path = "input/MP_profession.xlsx")[1:200,1:5] %>% select(-name)
+# join
+mps_and_professions <- mps %>% full_join(professions)
+
+mps_and_professions %<>% mutate(party_id = NA, party_abbr = tolower(party))
+# replace party with party_id
+unique(mps_and_professions$party_abbr)
+mps_and_professions$party_id <- 8
+mps_and_professions[mps_and_professions$party_abbr == "svp",]$party_id <- 4
+mps_and_professions[mps_and_professions$party_abbr == "cvp",]$party_id <- 2
+mps_and_professions[mps_and_professions$party_abbr == "fdp-lib",]$party_id <- 1
+mps_and_professions[mps_and_professions$party_abbr == "gps",]$party_id <- 13
+mps_and_professions[mps_and_professions$party_abbr == "sp",]$party_id <- 3
+mps_and_professions[mps_and_professions$party_abbr == "evp",]$party_id <- 7
+# mps_and_professions[mps_and_professions$party_abbr == "sol",]$party_id <- 9
+# mps_and_professions[mps_and_professions$party_abbr == "lps",]$party_id <- 1
+mps_and_professions[mps_and_professions$party_abbr == "lega",]$party_id <- 18
+mps_and_professions[mps_and_professions$party_abbr == "glp",]$party_id <- 31
+mps_and_professions[mps_and_professions$party_abbr == "bdp",]$party_id <- 32
+mps_and_professions[mps_and_professions$party_abbr == "mcr",]$party_id <- 90
+mps_and_professions[mps_and_professions$party_abbr == "csp-ow",]$party_id <- 91
+
+# some professions need to be cleaned manually
+mps_and_professions[mps_and_professions$profession_french == "Viticulteur/trice, œnologue",]$profession_french = "Viticulteur/trice, oenologue"
+mps_and_professions[mps_and_professions$profession_german == "Kaufmann / Kauffrau",]$profession_french = "Kaufmann/Kauffrau"
+
+mps_and_professions %<>% 
+  inner_join(professions_lt, by = c("profession_french" = "title.fr")) %>% 
+  select(-profession_french, -profession_german, -title.de, -title.en, -title.it, -title.ro) %>% 
+  rename(profession_id = id.y)
+
+# combine with branch lookup
+mps_and_professions %<>% inner_join(profession_branches, by = c("branch" = "title.fr")) %>% 
+  rename(branch_id = id, id = id.x) %>% 
+  select(-branch, -title.de, -title.en, -title.it, -title.ro) 
+
+
+# select only relevant data
+mps <- mps_and_professions %>% select(-party, -party_abbr) 
+
+# DO NOT USE
+# query commissions
+# mps %<>% mutate(commissions = "1;2;3") # placeholder
+
+# # loop over each MoP
+# df_of_all_commissions <- data.frame()
+# 
+# for(id in mps$id){
+#   commissions_all_lang <- list()
+#   # query by official parliament id
+#   for(lang in c("de", "fr", "it")){
+#     query_url <- paste("http://ws.parlament.ch/councillors/", id, "?format=json&activeCommitteeMembershipsFilter=true&lang=", lang, sep = "")
+#     rawdata <- GET(url=query_url, accept_json(), timeout(2))
+#     jsondata <- fromJSON(content(rawdata, type="text", encoding = "UTF-8"))
+#     commissions <- jsondata$committeeMemberships$committee
+#     commissions_all_lang[[lang]] <- commissions[,c("id","name")]
+#   }
+#   # serialize id and attach to MoP
+#   list_of_commission_ids <- paste(commissions_all_lang$de$id, collapse = ";")
+#   mps[mps$id == id,]$commissions <- list_of_commission_ids
+#   # add to list of all commissions
+#   commissions <- data.frame("id" = commissions_all_lang$de$id, "de" = commissions_all_lang$de$name, "fr" = commissions_all_lang$fr$name, "it" = commissions_all_lang$it$name)
+#   if(dim(commissions)[1] > 0){
+#     df_of_all_commissions <- rbind(df_of_all_commissions, commissions[,c("id", "de", "fr", "it")])
+#   }
+#   print(paste("fetched MP id ", id))
+# }
+# 
+
+# INSTEAD, use commissions.csv
+commissions <- read.csv('input/mp_commissions.csv')
+# join with mps
+mps %<>% left_join(commissions, by = "id")
+write.csv(mps, file = "output/parliamentarian.csv", na = "", row.names = F, quote = T)
+
+
+# DO NOT USE
+# # prepare commissions.csv
+# unique_commissions <- df_of_all_commissions %>% unique()
+# # transform
+# unique_commissions %<>% 
+#   rename(`title-de` = de,  `title-fr` = fr, `title-it` = it) %>% 
+#   mutate(`title-en` = NA, `title-ro` = NA) %>% 
+#   select(id, `title-de`, `title-en`, `title-fr`, `title-it`, `title-ro`)
+# # save
+# INSTEAD
+unique_commissions <- read.csv('input/commissions.csv')
+write.csv(unique_commissions, file = "output/commissions.csv", na = "", row.names = F, quote = T)
+
+```
+
+### Mandates of parliamentarians (links of interest)
+
+
+```{r}
+# Load list of MPs, mandates
+mps_mandates <- read_excel(path = "input/MP_mandates_v3.xlsx", sheet = 1)[1:1673,1:4]
+
+mps <- mps_mandates %>% select(mp_id, interest_category, interests) %>% rename(parliamentarian_id = mp_id, title = interests)
+
+parliamentarian_mandates <- mps %>% inner_join(interest_categories, by = c("interest_category" = "title.fr")) %>% 
+  rename(interest_categories_id = id) %>% 
+  select(parliamentarian_id, interest_categories_id, title)
+  
+write.csv(parliamentarian_mandates, file = "output/parliamentarian_mandates.csv", na = "", row.names = F, quote = T)
+```
+
+### Motions and postulates of parliamentarians
+
+```{r}
+# Load list of MPs, actions
+mps_actions <- read_excel(path = "input/motions_postulates.xlsx", sheet = 1)[1:2104,1:4]
+
+mps <- mps_actions %>% select(mp_id, bill_id, Topic) %>% rename(parliamentarian_id = mp_id)
+
+parliamentarian_actions <- mps %>% inner_join(political_action_categories, by = c("Topic" = "title.en")) %>% 
+  rename(political_action_categories_id = id) %>% 
+  select(parliamentarian_id, bill_id, political_action_categories_id) %>% 
+  arrange(parliamentarian_id, bill_id, political_action_categories_id)
+# aggregate
+# parliamentarian_actions %<>% group_by(parliamentarian_id, political_action_categories_id) %>% 
+#   summarize(count = n()) %>% arrange(parliamentarian_id, desc(count))
+write.csv(parliamentarian_actions, file = "output/parliamentarian_actions.csv", na = "", row.names = F, quote = T)
+```
+
+## Analysis
+
+### Correlation between interest bindings and submitted motions and postulates? 
+
+*The following comments are unfortunately in German*
+Korrelation zwischen Anzahl Interessenbindungen und Anzahl eingereichten Vorstössen? 
+
+```{r}
+# Anzahl Bindungen
+df1 <- parliamentarian_mandates %>% 
+  group_by(parliamentarian_id) %>% 
+  summarize(count_mandates = n()) %>% 
+  arrange(parliamentarian_id)
+# Anzahl Vorstösse
+df2 <- parliamentarian_actions %>% 
+  group_by(parliamentarian_id) %>% 
+  summarize(count_actions = n_distinct(bill_id)) %>% 
+  arrange(parliamentarian_id)
+# Zusatzinfos
+mps_parties <- mps_and_professions %>% select(id, party, branch_id) %>% rename(parliamentarian_id = id)
+# Join
+zusammen <- df1 %>% full_join(df2, by = "parliamentarian_id") %>% full_join(mps_parties)
+
+zusammen[is.na(zusammen$count_actions),]$count_actions <- 0
+
+zusammen[is.na(zusammen$count_mandates),]$count_mandates <- 0
+
+
+# ggplot eingefärbt nach Partei
+ggplot(zusammen, aes(count_mandates, count_actions)) + 
+  geom_point(size = 3) + 
+  theme_bw() +
+  ggtitle("Kein Zusammenhang zwischen Anzahl Mandaten und Vorstössen") +
+  labs(x = "Anzahl Mandate", y = "Anzahl Vorstösse", title) + 
+  stat_smooth(method = "lm", se = F)
+# durch. Mandate
+mean(zusammen$count_actions)
+mean(zusammen$count_mandates)
+```
+

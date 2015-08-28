@@ -1,0 +1,12 @@
+message-code,id,color-id,sortorder,use-label,abbr-de,abbr-en,abbr-fr,abbr-it,abbr-ro
+party.name.sp,3,,1,1,SP,SP,PS,PS,PS
+party.name.gps,13,,2,1,GPS,GPS,Les Verts,Verdi,PES
+party.name.glp,31,,3,1,GLP,GLP,PVL,PVL,PVL
+party.name.evp,7,,4,1,EVP,EVP,PEV,PEV,PEV
+party.name.cvp,2,,5,1,CVP,CVP,PDC,PPD,PCD
+party.name.csp-ow,91,,6,1,CSP,CSP,PCS,PCS,PCS
+party.name.bdp,32,,7,1,BDP,BDP,PBD,PBD,PBD
+party.name.fdp,1,,8,1,FDP,FDP,PLR,PLR,PLD
+party.name.lega,18,,9,1,Lega,Lega,Lega,Lega,Lega
+party.name.svp,4,,10,1,SVP,SVP,UDC,UDC,PPS
+party.name.mcr,90,,11,1,MCR,MCR,MCG,MCR,MCR
