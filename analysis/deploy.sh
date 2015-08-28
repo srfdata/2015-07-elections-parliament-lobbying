@@ -11,7 +11,7 @@ rm -rf rscript/
 mkdir rscript
 # copy over necessary scripts from master branch 
 cp tmp/main.Rmd rscript
-
+cp index.html rscript
 # copy over other nessecary output files from master branch
 cp -r tmp/output rscript/
 
